@@ -5,7 +5,7 @@ import org.scribe.model.Token;
 
 public class FitbitApi extends DefaultApi10a {
 
-	private static final String BASE_URL = "https://api.fitbit.com";
+	public static final String BASE_URL = "https://api.fitbit.com";
 	private static final String ENDPOINT_ACCESSTOKEN = BASE_URL
 			+ "/oauth/access_token";
 	private static final String ENDPOINT_REQUESTTOKEN = BASE_URL
