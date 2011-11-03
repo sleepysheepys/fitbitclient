@@ -1,5 +1,6 @@
 package de.kopis.fitbit;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -144,14 +145,35 @@ public class FitbitService {
 
 	private static Token load() throws FitbitException {
 		final Properties props = new Properties();
-		try {
-			props.load(new FileReader("fitbit.properties"));
-		} catch (final FileNotFoundException e) {
-			throw new FitbitException(e);
-		} catch (final IOException e) {
-			throw new FitbitException(e);
+		File file = new File("fitbit.properties");
+		if (file.exists()) {
+			System.out.println("File fitbit.properties found.");
+			try {
+				props.load(new FileReader(file));
+			} catch (final FileNotFoundException e) {
+				throw new FitbitException(e);
+			} catch (final IOException e) {
+				throw new FitbitException(e);
+			}
+		} else {
+			System.out
+					.println("File fitbit.properties not found. Getting access token from environment...");
+			props.setProperty("access_token", "");
+			props.setProperty("access_token_secret", "");
 		}
+
+		updateFromSystemProperties(props);
+
 		return new Token(props.getProperty("access_token", ""),
 				props.getProperty("access_token_secret", ""));
+	}
+
+	private static void updateFromSystemProperties(final Properties props) {
+		for (Object key : props.keySet()) {
+			String value = System.getProperty((String) key);
+			if (value != null) {
+				props.setProperty((String) key, value);
+			}
+		}
 	}
 }
