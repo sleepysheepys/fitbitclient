@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.scribe.builder.ServiceBuilder;
 import org.scribe.model.OAuthRequest;
@@ -18,17 +20,6 @@ import org.scribe.model.Verifier;
 import org.scribe.oauth.OAuthService;
 
 public class FitbitService {
-	private static final String YOUR_API_KEY = "d5c41a13861742009238d0f97a33a5e7";
-	private static final String YOUR_API_SECRET = "a3aa0e3c42af42638692613eeae26447";
-	private static final OAuthService service = new ServiceBuilder()
-			.provider(FitbitApi.class).apiKey(YOUR_API_KEY)
-			.apiSecret(YOUR_API_SECRET).build();
-	private static final String FORMAT = "json";
-	private static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat(
-			"yyyy-MM-dd");
-	private Token accessToken;
-	private Token requestToken;
-	private final String user = "-";
 
 	FitbitService() throws FitbitException {
 		this(load());
@@ -102,12 +93,22 @@ public class FitbitService {
 
 	private String get(final String category, final String information,
 			final String range) throws FitbitException {
-		final OAuthRequest request = new OAuthRequest(Verb.GET, getBaseUrl()
-				+ add(category) + add(information) + add(range) + getFormat());
+		final OAuthRequest request = new OAuthRequest(Verb.GET, buildUrl(
+				category, information, range));
 		service.signRequest(accessToken, request);
 		final Response response = request.send();
 		final String data = response.getBody();
 		return validate(data);
+	}
+
+	private String buildUrl(final String category, final String information,
+			final String range) {
+		final String url = getBaseUrl() + add(category) + add(information)
+				+ add(range) + getFormat();
+		if (LOG.isLoggable(Level.FINE)) {
+			LOG.fine("buildUrl=" + url);
+		}
+		return url;
 	}
 
 	private String validate(String json) throws FitbitException {
@@ -147,7 +148,9 @@ public class FitbitService {
 		final Properties props = new Properties();
 		File file = new File("fitbit.properties");
 		if (file.exists()) {
-			System.out.println("File fitbit.properties found.");
+			if (LOG.isLoggable(Level.CONFIG)) {
+				LOG.config("File fitbit.properties found.");
+			}
 			try {
 				props.load(new FileReader(file));
 			} catch (final FileNotFoundException e) {
@@ -156,8 +159,7 @@ public class FitbitService {
 				throw new FitbitException(e);
 			}
 		} else {
-			System.out
-					.println("File fitbit.properties not found. Getting access token from environment...");
+			LOG.warning("File fitbit.properties not found. Getting access token from environment...");
 			props.setProperty("access_token", "");
 			props.setProperty("access_token_secret", "");
 		}
@@ -176,4 +178,18 @@ public class FitbitService {
 			}
 		}
 	}
+
+	private static final String YOUR_API_KEY = "d5c41a13861742009238d0f97a33a5e7";
+	private static final String YOUR_API_SECRET = "a3aa0e3c42af42638692613eeae26447";
+	private static final OAuthService service = new ServiceBuilder()
+			.provider(FitbitApi.class).apiKey(YOUR_API_KEY)
+			.apiSecret(YOUR_API_SECRET).build();
+	private static final String FORMAT = "json";
+	private static final SimpleDateFormat DATEFORMAT = new SimpleDateFormat(
+			"yyyy-MM-dd");
+	private Token accessToken;
+	private Token requestToken;
+	private final String user = "-";
+	private static final Logger LOG = Logger.getLogger(FitbitService.class
+			.getName());
 }
