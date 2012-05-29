@@ -21,7 +21,7 @@ import org.scribe.oauth.OAuthService;
 
 public class FitbitService {
 
-	FitbitService() throws FitbitException {
+	public FitbitService() throws FitbitException {
 		this(load());
 	}
 
