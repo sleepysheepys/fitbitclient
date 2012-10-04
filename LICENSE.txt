@@ -1,0 +1,5 @@
+This software is provided under a "do what you want with attribution"
+license.
+
+You can use it, modify it, include it in your software as long as you
+provide a link back to this repository to your users.
